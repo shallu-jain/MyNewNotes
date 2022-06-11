@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 
+// import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'dart:developer' as devtools show log;
 import '../firebase_options.dart';
 
 class RegisterView extends StatefulWidget {
@@ -35,7 +36,7 @@ class _RegisterViewState extends State<RegisterView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Register View'),
+        title: const Text('Register View'),
       ),
       body: Column(
         children: [
@@ -64,25 +65,25 @@ class _RegisterViewState extends State<RegisterView> {
               try {
                 final userCredential = await FirebaseAuth.instance
                     .createUserWithEmailAndPassword(
-                        email: email, password: password);
-                print(userCredential);
+                    email: email, password: password);
+                devtools.log(userCredential.toString());
               } on FirebaseAuthException catch (e) {
                 if (e.code == 'email-already-in-use') {
-                  print('Email Already Used');
+                  devtools.log('Email Already Used');
                 } else if (e.code == 'weak-password') {
-                  print('WEAK PASSWORD');
+                  devtools.log('WEAK PASSWORD');
                 } else if (e.code == 'invalid-email') {
-                  print('INVALID EMAIL');
+                  devtools.log('INVALID EMAIL');
                 }
               }
-              ;
             },
-            child: Text('Register'),
+            child: const Text('Register'),
           ),
           TextButton(
               onPressed: () {
-                Navigator.of(context).pushNamedAndRemoveUntil('/login/', (route) => false);
-              }, child: Text('ALready Registered? Login Here!'))
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/login/', (route) => false);
+              }, child: const Text('Already Registered? Login Here!'))
         ],
       ),
     );

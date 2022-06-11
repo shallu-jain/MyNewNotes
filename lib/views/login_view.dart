@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../firebase_options.dart';
+import 'dart:developer' as devtools show log;
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -34,7 +35,7 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     return
       Scaffold(
-      appBar: AppBar(title: Text('Login Page'),),
+      appBar: AppBar(title:const Text('Login Page'),),
       body:
       Column(
         children: [
@@ -62,25 +63,28 @@ class _LoginViewState extends State<LoginView> {
               final password = _password.text;
               // FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
               try {
-                final userCredential = await FirebaseAuth.instance
+                await FirebaseAuth.instance
                     .signInWithEmailAndPassword(
                         email: email, password: password);
-                print(userCredential);
+                // devtools.log(userCredential.toString());
+                Navigator.of(context).pushNamedAndRemoveUntil( '/notes/', (route) => false);
+                // print(userCredential);
               } on FirebaseAuthException catch (e) {
                 if (e.code == 'user-not-found') {
-                  print('User not Found');
+                  devtools.log("User Not Found");
+                  // print('User not Found');
                 } else if (e.code == 'wrong-password') {
-                  print('Wrong Password');
+                  devtools.log('Wrong Password');
                 }
               }
             },
-            child: Text('Login'),
+            child:const Text('Login'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pushNamedAndRemoveUntil('/register/', (route) => false);
             },
-            child: Text("Not Registered Yet? Register Here!"),
+            child:const Text("Not Registered Yet? Register Here!"),
           )
         ],
       ), // these we can scaffold
