@@ -63,7 +63,10 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
+      appBar: AppBar(
+          title: Text(
+        "Hello world",
+      )),
     );
   }
 }
