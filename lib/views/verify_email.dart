@@ -14,7 +14,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:const Text("Verify Email Page"),
+        title: const Text("Verify Email Page"),
       ),
       body: Column(
         children: [
@@ -24,7 +24,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
               final user = FirebaseAuth.instance.currentUser;
               await user?.sendEmailVerification();
             },
-            child:const Text("Send Email Verification"),
+            child: const Text("Send Email Verification"),
           ),
         ],
       ),
