@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import '../firebase_options.dart';
+
+// import 'package:firebase_core/firebase_core.dart';
+import 'package:my_notes/constants/routes.dart';
+
+// import '../firebase_options.dart';
 import 'dart:developer' as devtools show log;
 
 class LoginView extends StatefulWidget {
@@ -33,11 +36,11 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return
-      Scaffold(
-      appBar: AppBar(title:const Text('Login Page'),),
-      body:
-      Column(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Login Page'),
+      ),
+      body: Column(
         children: [
           TextField(
             controller: _email,
@@ -63,11 +66,11 @@ class _LoginViewState extends State<LoginView> {
               final password = _password.text;
               // FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
               try {
-                await FirebaseAuth.instance
-                    .signInWithEmailAndPassword(
-                        email: email, password: password);
+                await FirebaseAuth.instance.signInWithEmailAndPassword(
+                    email: email, password: password);
                 // devtools.log(userCredential.toString());
-                Navigator.of(context).pushNamedAndRemoveUntil( '/notes/', (route) => false);
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil(notesRoute, (route) => false);
                 // print(userCredential);
               } on FirebaseAuthException catch (e) {
                 if (e.code == 'user-not-found') {
@@ -78,13 +81,14 @@ class _LoginViewState extends State<LoginView> {
                 }
               }
             },
-            child:const Text('Login'),
+            child: const Text('Login'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pushNamedAndRemoveUntil('/register/', (route) => false);
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil(registerRoute, (route) => false);
             },
-            child:const Text("Not Registered Yet? Register Here!"),
+            child: const Text("Not Registered Yet? Register Here!"),
           )
         ],
       ), // these we can scaffold
