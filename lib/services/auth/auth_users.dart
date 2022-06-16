@@ -3,11 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart' show User;
 
 class AuthUser {
   final bool isEmailVerified;
+  final String ?email;
 
-  const AuthUser({required this.isEmailVerified});
+  const AuthUser({required this.email, required this.isEmailVerified});
 
-  factory AuthUser.fromFirebase(User user) => AuthUser(isEmailVerified: user.emailVerified);
-  void testing(){
-    AuthUser(isEmailVerified:true);
-  }
+  factory AuthUser.fromFirebase(User user) =>
+      AuthUser(email: user.email, isEmailVerified: user.emailVerified);
+
+  // void testing() {
+  //   AuthUser(isEmailVerified: true, email: '');
+  // }
 }
