@@ -1,29 +1,35 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:my_notes/services/crud/crud_exceptions.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join;
 
-class DatabaseAlreadyOpenException implements Exception {}
-
-class UnableToGetDocumentDirectory implements Exception {}
-
-class DatabaseIsNotOpen implements Exception {}
-
-class CouldNotDeleteUser implements Exception {}
-
-class UserAlreadyExists implements Exception {}
-
-class CouldNotFindUser implements Exception {}
-
-class CouldNotDeleteNote implements Exception {}
-
-class CouldNotFindNote implements Exception {}
-
-class CouldNotUpdateNote implements Exception {}
-
 class NotesService {
   Database? _db;
+  List<DatabaseNote> _notes = [];
+  final _notesStreamController =
+      StreamController<List<DatabaseNote>>.broadcast();
+  Future<DatabaseUser> getOrCreateUser({required String email})async{
+    try {
+      final user = await getUser(email: email);
+      return user;
+    }
+    on CouldNotFindUser{
+      final createdUser = await createUser(email: email);
+      return createdUser;
+    }
+    catch(e){
+      rethrow;
+    }
+  }
+  // Reading and caching notes
+  Future<void> _cacheNotes() async {
+    final allNotes = await getAllNotes();
+    _notes = allNotes.toList();
+    _notesStreamController.add(_notes);
+  }
 
   Database _getDatabaseOrThrow() {
     final db = _db;
@@ -66,6 +72,8 @@ class NotesService {
       await db.execute(createUserTable);
       // create the note table
       await db.execute(createNoteTable);
+      // these below is of cache notes present in database
+      await _cacheNotes();
     } on MissingPlatformDirectoryException {
       throw UnableToGetDocumentDirectory();
     }
@@ -135,6 +143,8 @@ class NotesService {
       userId: owner.id,
       isSyncedWithCloud: true,
     );
+    _notes.add(note); // these is written in StreamController
+    _notesStreamController.add(_notes);
     return note;
   }
 
@@ -148,13 +158,19 @@ class NotesService {
     );
     if (deletedCount == 0) {
       throw CouldNotDeleteNote();
+    } else {
+      _notes.removeWhere((note) => note.id == id);
+      _notesStreamController.add(_notes);
     }
   }
 
 // Allow or say ability to delete all notes
-  Future<int> deleteNotes() async {
+  Future<int> deleteAllNotes() async {
     final db = _getDatabaseOrThrow();
-    return await db.delete(noteTable);
+    final numberOfDeletions = await db.delete(noteTable);
+    _notes = [];
+    _notesStreamController.add(_notes);
+    return numberOfDeletions;
   }
 
 // Fetching a specific note
@@ -165,12 +181,16 @@ class NotesService {
     if (notes.isEmpty) {
       throw CouldNotFindNote();
     } else {
-      return DatabaseNote.fromRow(notes.first);
+      final note = DatabaseNote.fromRow(notes.first);
+      _notes.removeWhere((note) => note.id == id);
+      _notes.add(note);
+      _notesStreamController.add(_notes);
+      return note;
     }
   }
 
 // try to fetch all note
-  Future<Iterable<DatabaseNote>> getAllNotes({required int id}) async {
+  Future<Iterable<DatabaseNote>> getAllNotes() async {
     final db = _getDatabaseOrThrow();
     final notes = await db.query(noteTable);
 
@@ -178,11 +198,13 @@ class NotesService {
   }
 
 // update the existing notes
-  Future<DatabaseNote> updateNotes(
+  Future<DatabaseNote> updateNote(
       {required DatabaseNote note, required String text}) async {
     final db = _getDatabaseOrThrow();
     // final notes =
+    // make sure note exist so that's why below line is written
     await getNote(id: note.id);
+    // update DataBase
     final updatesCount = await db.update(noteTable, {
       textColumn: text,
       isSyncedWithCloudColumn: 0,
@@ -190,7 +212,11 @@ class NotesService {
     if (updatesCount == 0) {
       throw CouldNotUpdateNote();
     } else {
-      return await getNote(id: note.id);
+      final updatedNote = await getNote(id: note.id);
+      _notes.removeWhere((note) => note.id == updatedNote.id);
+      _notes.add(updatedNote);
+      _notesStreamController.add(_notes);
+      return updatedNote;
     }
   }
 }
