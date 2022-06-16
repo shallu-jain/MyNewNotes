@@ -2,9 +2,10 @@ import 'dart:developer' as devtools show log;
 
 // import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:my_notes/constants/routes.dart';
 import 'package:my_notes/services/auth/auth_service.dart';
 import 'package:my_notes/services/crud/notes_service.dart';
-import '../enum/menu_action.dart';
+import '../../enum/menu_action.dart';
 
 class NotesView extends StatefulWidget {
   const NotesView({Key? key}) : super(key: key);
@@ -38,6 +39,12 @@ class _NotesViewState extends State<NotesView> {
       appBar: AppBar(
         title: const Text("Your notes UI"),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).pushNamed(newNoteRoute);
+            },
+            icon: const Icon(Icons.add),
+          ),
           PopupMenuButton<MenuAction>(
             onSelected: (value) async {
               switch (value) {
